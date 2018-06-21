@@ -1,0 +1,304 @@
+---
+title: "Model Comparison"
+author: Matthew Talluto
+institute: CNRS
+date: August 18, 2017
+documentclass: eecslides
+babel-lang: english
+output:
+  beamer_presentation:
+    highlight: tango
+    includes:
+      in_header: header.tex
+# Rscript -e 'rmarkdown::render("Day5.Rmd", "all")'
+# (am: 1h20 + 1h20 / pm 2h + 15min)
+---
+
+*Douter de tout ou tout croire sont deux solutions également commodes, qui nous dispensent de réfléchir.*
+
+\hspace{1cm}--Henri Poincaré
+
+
+
+
+
+
+# Introduction to Model Comparison
+
+Why compare models?
+
+\pause
+
+  * All models are imperfect
+  * How good is our model \emph{given the modelling goals?}
+
+
+
+# Comparing models
+
+Before beginning, evaluate the goals of the comparison
+
+  * Predictive performance
+  * Hypothesis testing
+  * Reduction of overfitting
+
+If you are asking yourself, "should I use A/B/DIC?"
+
+Remember Betteridge's law...
+
+\pause
+
+> Any headline that ends in a question mark can be answered with the word "NO"
+
+
+
+
+# Informal model comparison
+![](Image/fig_d5_param_estimates.pdf)
+
+
+
+# Comparison through evaluation
+
+If the goal is predictive performance, evaluate directly.
+
+  * Cross-validation
+  * k-fold cross validation
+
+Cost: can be computationally intensive (especially for Bayesian). But you are already paying this cost (you ARE evaluating your models, right?)
+
+\pause
+
+Requires selecting an evaluation score
+
+  * ROC/TSS (classification)
+  * RMSE (continuous)
+  * Goodness of fit
+  * ...
+
+
+# Bayesian predictive performance
+
+Consider a regression model
+
+\begin{align*}
+pr(\theta | y, x) & \propto pr(y, x, | \theta) pr(\theta) \\
+y & \sim \mathcal{N}(\alpha + \beta x, \sigma)
+\end{align*}
+
+From a new value $\hat{x}$ we can compute a posterior prediction $\hat{y} = \alpha + \beta x$ 
+
+
+
+
+# Bayesian predictive performance
+
+We can then compute the \emph{log posterior predictive density} (lppd):
+
+\begin{align*}
+lppd = pr(\hat{y} | \theta)
+\end{align*}
+
+\pause
+
+Where is the prior?
+
+
+
+
+
+# Bayesian predictive performance
+
+We want to summarize lppd taking into account:
+
+  * an entire set of prediction points $\hat{x} = \{x_1, x_2, \dots x_n \}$
+  * the entire posterior distribution of $\theta$ 
+    * (or, realistically, a set of $S$ draws from the posterior distribution)
+
+\pause
+
+\begin{align*}
+lppd = \sum_{i=1}^n \log \left ( \frac{1}{S} \sum_{s=1}^S pr(\hat{y} | \theta^s) \right )
+\end{align*}
+
+\pause
+
+To compare two competing models $\theta_1$ and $\theta_2$, simply compute $lppd_{\theta_1}$ and $lppd_{\theta_2}$, the "better" model (for prediction) is the one with a larger lppd.
+
+
+
+# Information criteria
+
+What do we do when $\theta_1$ and $\theta_2$ are very different?
+
+\pause
+
+Considering the lpd (using the calibration data), it can be proven, when $\theta_2$ is \emph{strictly nested} within $\theta_1$, that $lpd_{\theta_1} > lpd_{\theta_2}$.
+
+\pause
+
+Thus, we require a method for penalizing the larger (or more generally, more flexible) model to avoid simply overfitting, especially when validation data are unavailable.
+
+
+
+# AIC
+
+\begin{align*}
+AIC = 2k - 2 \log pr(\hat{x | \theta})
+\end{align*}
+
+  * $pr(\hat{x | \theta}) = \max (pr(x | \theta))$ and $k$ is the number of parameters.
+  * AIC increases as the model gets worse or the number of parameters gets larger
+  * $- 2 \log pr(\hat{x | \theta})$ is sometimes referred to as *deviance*
+
+\pause
+
+What is the number of parameters in a hierarchical model?
+
+
+# DIC
+
+\begin{align*}
+D(\theta) & = -2 \log (pr(x | \theta))
+\end{align*}
+
+\pause
+
+We still penalize the model based on complexity, but we must estimate how many *effective* parameters there are:
+
+\begin{align*}
+p_D & = \mathbb{E}[D(\theta)] - D( \mathbb{E}[\theta])
+\end{align*}
+
+\pause
+
+\begin{align*}
+DIC & = D( \mathbb{E}[\theta]) + 2p_D
+\end{align*}
+
+
+
+
+# DIC
+**Pros:**
+
+  * Easy to estimate
+  * Widely used and understood
+  * Effective for a variety of models regardless of nestedness or model size
+
+**Cons**
+
+  * Not Bayesian
+  * Assume $\theta \sim \mathcal{MN}$
+  * Modest computational cost
+
+
+
+
+# Bayes factor
+
+Consider two competing models $\theta_1$ and $\theta_2$
+
+In classical likelihood statistics, we can compute the likelihood ratio:
+
+\begin{align*}
+LR = \frac{MLE(X | \theta_1)}{MLE(X | \theta_2)}
+\end{align*}
+
+\pause
+
+A fully Bayesian approach is to take into account the entire posterior distribution of both models:
+
+\begin{align*}
+K = \frac{pr(\theta_1 | X)}{pr(\theta_2 | X)}
+\end{align*}
+
+
+
+
+
+# Bayes factor
+
+For a single posterior estimate of each model:
+
+\begin{align*}
+K & = \frac{pr(\theta_1 | X)}{pr(\theta_2 | X)} \\
+  & = \frac{pr(X | \theta_1 ) pr(\theta_1)}{pr(X | \theta_2) pr(\theta_2)}
+\end{align*}
+
+# Bayes factor
+
+To account for the entire distribution:
+\begin{align*}
+K & = \frac{\int pr(\theta_1 | X) d\theta_1}{\int pr(\theta_2 | X)d\theta_2} \\
+  & = \frac{\int pr(X | \theta_1 ) pr(\theta_1)d\theta_1}{\int pr(X | \theta_2) pr(\theta_2)d\theta_2}
+\end{align*}
+
+
+
+
+
+
+# And others
+  * Bayesian model averaging
+  * Reversible jump MCMC
+
+
+
+# Software
+
+```{r, fig.width =4, fig.height=6}
+library(mcmc)
+suppressMessages(library(bayesplot))
+
+
+logposterior <- function(params, dat)
+{
+  if(params[2] <= 0) 
+    return(-Inf)
+
+  mu <- params[1]
+  sig <- params[2]
+
+  lp <- sum(dnorm(dat, mu, sig, log=TRUE)) + 
+      dnorm(mu, 16, 0.4, log = TRUE) + 
+      dgamma(sig, 1, 0.1, log = TRUE)
+  return(lp)
+}
+```
+
+# Software
+
+```{r, fig.width =4, fig.height=6}
+X <- c(15, 19.59, 15.06, 15.71, 14.65, 21.4, 17.64, 18.31, 
+    15.12, 14.40)
+inits <- c(5, 2)
+tuning <- c(1.5, 0.5)
+
+model <- metrop(logposterior, initial = inits, 
+    nbatch = 10000, dat = X, scale = tuning)
+model$accept
+colnames(model$batch) = c('mu', 'sigma')
+colMeans(model$batch)
+```
+
+
+# Software
+
+```{r, fig.width =6, fig.height=4, echo=FALSE}
+mcmc_dens(model$batch)
+```
+
+# Software
+
+```{r, fig.width =6, fig.height=4, echo=FALSE}
+mcmc_trace(model$batch)
+```
+
+
+# Other software
+
+  * mcmc
+  * LaplacesDemon
+  * JAGS
+  * Stan

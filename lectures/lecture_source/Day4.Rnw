@@ -1,0 +1,589 @@
+\documentclass{eecslides}
+\mode<presentation>
+%\usecolortheme{BBSDark}
+
+%%------------------
+% Language and font
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%%------------------
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{calc, shapes, backgrounds, arrows}
+
+% --- include packages
+\usepackage{subfigure}
+\usepackage{multicol}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+% --- Writing certain lines in courrier 
+\usepackage{courier}
+
+%%------------------
+\DeclareRobustCommand\refmark[1]{\textsuperscript{\ref{#1}}}
+
+%%------------------ Tune the template
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+\title[Day 4]{Hierarchical (multilevel) models}
+\vspace{0.4cm}
+\vspace{0.6cm}
+
+%%% Begin slideshow
+
+\begin{document}
+
+\frame{
+  \titlepage
+}
+
+\section{Introduction}
+
+\frame{
+\frametitle{What is a hierarchical model?}
+
+\begin{columns}[T]
+\begin{column}{0.6\textwidth}
+
+  {\large\bf Global Model}
+  
+  \vspace{-0.2cm}
+
+  {\large $$P(y=1) = \beta x + \epsilon$$}
+  {\large\bf Seperate model}
+  
+  \vspace{-0.3cm}
+  
+  {\large $$\textcolor[rgb]{1,0.65,0}{P(y=1) = \beta_1 x + \epsilon_1}$$}
+  
+  \vspace{-1cm}
+  
+  {\large $$\textcolor[rgb]{0,0.75,1}{P(y=1) = \beta_2 x + \epsilon_2}$$}
+  
+  \vspace{-1cm}
+  
+  {\large $$\textcolor[rgb]{1,0.08,0.58}{P(y=1) = \beta_3 x + \epsilon_3}$$}
+  {\large\bf Hierarchical model}
+  
+  \vspace{-0.4cm}
+
+  {\large $$P(y=1) = \beta_i x + \epsilon$$}
+  
+  \vspace{-0.6cm}
+
+  where
+  
+  \vspace{-0.6cm}
+
+  {\large $$\beta_i \sim {\cal D}(\mu_\beta,\sigma_\beta)$$}
+  
+  \vspace{-0.1cm}
+ 
+ \begin{itemize}
+  \item[$y$] is the distribution of sugar maple
+  \item[$x$] is elevation
+ \end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\vspace{-0.5cm}
+<<acerSacc2,dev='pdf',fig.width = 5,fig.height = 8,echo=FALSE,eval=TRUE>>=
+sutton <- read.csv("sutton.csv",sep=";")
+acsa <- as.matrix(ifelse(sutton$acsa>0,1,0))
+xy <- sutton[,1:2]
+elev<-as.matrix(xy[,2])
+
+### Draw map
+par(mar=c(0,0,0,0),oma=c(3,3,3,0))
+plot(xy,type="n",asp=1,axes=FALSE,xlab="",ylab="",las=1)
+mtext("200 m",side = 1,outer=TRUE, cex = 1.75)
+mtext("1000 m",side = 2,outer=TRUE, cex = 1.75,line=-7)
+mtext("Sugar maple",side = 3,outer=TRUE, cex = 2)
+rect(-15,-15,195,329,border="orange",col="orange")
+rect(-15,329,195,670,border="deepskyblue",col="deepskyblue")
+rect(-15,670,195,995,border="deeppink",col="deeppink")
+points(xy[which(acsa==1),],pch=15,cex=1.25)
+points(xy[which(acsa==0),],pch=15,cex=1.25,col="white")
+@
+\end{column}
+\end{columns}
+}
+
+\frame{
+\frametitle{Why are hierarchical model worth studying?}
+
+\large 
+
+\begin{itemize}
+\setlength\itemsep{0.3cm}
+  \item To learn about the effect of a treatment that vary
+  \item Because it makes it possible to perform inferences using all the data for groups with small sample size
+  \item To make prediction of a new unsampled group
+  \item Allows to inherently analyse structured data
+  \item It is more efficient in making inferences for regression parameters than classical regressions
+  \item Makes it possible to include predictors at multiple levels
+  \item It accurately acounts for uncertainty in prediction and estimation 
+  \item It is a bridge for multivariate modelling
+\end{itemize}
+
+}
+
+\section{Problem 1}
+
+
+\frame{
+\frametitle{Building a hierarchical model}
+
+\vspace{-0.5cm}
+
+\begin{columns}
+\begin{column}{0.7\textwidth}
+{\bf\Large Problem}
+
+\vspace{0.1cm}
+
+\textcolor[rgb]{1,0.65,0}{Jonathan \textit{Brass} Brassard} (our team research professional) had two helpers (\textcolor[rgb]{0,0.75,1}{Steve \textit{Overflow} Vissault} and \textcolor[rgb]{1,0.08,0.58}{Amaël \textit{Lemalin} LeSquin}) working with him and he wants to know if their effort is affected by the climb of Mont Sutton.
+
+\vspace{0.1cm}
+
+{\bf\Large Data}
+{\footnotesize
+<<suttonData>>=
+sutton <- read.csv("sutton.csv",sep=";")
+
+tree <- rowSums(sutton[,3:9])
+
+field <- sutton[,10]
+@
+}
+
+\end{column}
+\begin{column}{0.4\textwidth}
+<<Brass,dev='pdf',fig.width = 5,fig.height =8,echo=FALSE,eval=TRUE>>=
+xy <- sutton[,1:2]
+### Draw map
+par(mar=c(0,0,0,0),oma=c(3,3,3,0))
+plot(xy,type="n",asp=1,axes=FALSE,xlab="",ylab="",las=1)
+mtext("200 m",side = 1,outer=TRUE, cex = 1.75)
+mtext("1000 m",side = 2,outer=TRUE, cex = 1.75,line=-7)
+points(xy[which(as.character(field)=="Brass"),],pch=15,cex=1.25, col="orange")
+points(xy[which(as.character(field)=="Overflow"),],pch=15,cex=1.25,col="deepskyblue")
+points(xy[which(as.character(field)=="LeMalin"),],pch=15,cex=1.25,col="deeppink")
+@
+\end{column}
+\end{columns}
+}
+
+\section{DAG 1}
+
+\frame{
+\frametitle{Building a hierarchical model}
+\framesubtitle{Direct Acyclic Graph}
+
+  \begin{center}
+    \scalebox{0.5}{
+      \includegraphics{Image/DAGbase.pdf}
+    }
+  \end{center}
+}
+
+\frame{
+\frametitle{Building a hierarchical model}
+\framesubtitle{Direct Acyclic Graph}
+
+  \begin{center}
+    \scalebox{0.5}{
+      \includegraphics{Image/DAGexample.pdf}
+    }
+  \end{center}
+}
+
+\section{Model 1}
+
+\frame{
+\frametitle{Defining the pieces properly}
+\framesubtitle{Model}
+
+\Large
+
+\vspace{-0.5cm}
+
+{\Large Model definition}
+\begin{align*}
+\text{Poisson}(\textcolor{blue}{\mathbf{y}_{i}})&=\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_{i}}\\
+\log(\text{E}(\textcolor{blue}{\mathbf{y}_{i}}))&=\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_{i}}\\
+\text{E}(\textcolor{blue}{\mathbf{y}_{i}})&=e^{\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_{i}}}
+\end{align*}
+$$\textcolor{brown}{\beta}\sim{\cal N}(\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})$$
+
+{\Large Prior definition}
+$$\textcolor{brown}{\mu}\sim{\cal N}(\textcolor{green!50!black}{\mu_0},\textcolor{green!50!black}{\sigma_0^2})$$
+$$\frac{1}{\textcolor{brown}{\sigma^2}}\sim{\cal \Gamma}(\textcolor{green!50!black}{\tau_0},\textcolor{green!50!black}{\phi_0})$$
+}
+
+
+\frame{
+\frametitle{Defining the pieces properly}
+\framesubtitle{Model}
+
+{\Large\bf\textcolor{blue}{Data}}
+
+\vspace{0.2cm}
+
+\begin{description}
+  \item[$\mathbf{y}_{i}$] The number of trees at site $i$
+  \item[$\mathbf{X}_{i}$] Elevation at site $i$
+\end{description}
+
+{\Large\bf\textcolor{brown}{Parameters}}
+
+\vspace{0.2cm}
+
+\begin{description}
+  \item[$\beta$] The importance of elevation for species
+  \item[$\mu$] Average response of the species to elevation
+  \item[$\sigma^2$] How a species varies in its response to elevation
+\end{description}
+
+{\Large\bf \textcolor{green!50!black}{Priors}}
+
+\begin{description}
+  \item[$\mu_0$] Mean prior about how $\mu$ is distributed
+  \item[$\sigma_0^2$] Variance prior about how $\mu$ is distributed
+  \item[$\tau_0$] Scale prior about how $\sigma$ is distributed
+  \item[$\phi_0$] rate prior about how $\sigma$ is distributed
+\end{description}
+
+\vspace{0.2cm}
+
+}
+
+\section{Sampler 1}
+
+
+\frame{
+\frametitle{Write your own Gibbs sampler}
+{\bf\Large Write a Gibbs sampler to estimate all parameters of the hierarchical model described previously}
+
+\vspace{0.5cm}
+
+\Large Recall that
+	$$\underbrace{P(\text{Model}|\text{Data})}_{\textcolor{orange}{Posterior}}\propto \underbrace{P(\text{Data}|\text{Model})}_\text{\textcolor{blue}{Likelihood}}\underbrace{P(\text{Model})}_\text{\textcolor{green!50!black}{Prior}}$$
+
+\vspace{0.5cm}
+	
+	$$P(\boldsymbol{\theta}|\mathbf{Y}) \propto P(\mathbf{Y}|\boldsymbol{\theta})P(\boldsymbol{\theta})$$
+
+}
+
+\frame{
+\frametitle{Exercice - Write your own Gibbs sampler}
+\framesubtitle{A few guidelines}
+\Large Define the different parts... Mathematically
+
+\vspace{0.2cm}
+
+\large
+
+{\bf \hspace{0.1cm} Likelihood}
+$$P(\textcolor{blue}{\mathbf{y}_i}|\textcolor{brown}{\beta}, \textcolor{blue}{\mathbf{X}})=\prod^n_{i=1}\frac{e^{\textcolor{blue}{\mathbf{y}_i}\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_i}}e^{-e^{\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_i}}}}{y_i!}$$
+
+$$P(\textcolor{brown}{\beta}|\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})=\dfrac{1}{\textcolor{brown}{\sigma}\sqrt{2\pi}}e^{-\frac{(\textcolor{brown}{\beta}-\textcolor{brown}{\mu})^2}{2\textcolor{brown}{\sigma^2}}}$$
+
+
+%{\large \hspace{0.1cm} log-Likelihood}
+%$$\log\left(P(\textcolor{blue}{\mathbf{Y}_j}|\textcolor{brown}{\beta},\textcolor{brown}{\mu},\textcolor{brown}{\sigma}, \textcolor{blue}{\mathbf{X}})\right)=\sum^n_{i=1}\left(\textcolor{blue}{\mathbf{Y}_{ij}}\left(\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}\right)-\log\left(1+e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}}\right)\right)$$
+%\hspace{0.2cm} where
+%$$\textcolor{brown}{\beta_j}\sim{\cal N}(\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})$$
+}
+
+\frame{
+\frametitle{Exercice - Write your own Gibbs sampler}
+\framesubtitle{A few guidelines}
+\Large Define the different parts... Mathematically
+
+\large
+
+{\bf \hspace{0.1cm} Prior}
+\begin{align*}
+  P(\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})&=(\textcolor{brown}{\mu}|\textcolor{green!50!black}{\mu_0},\textcolor{green!50!black}{\sigma_0})(\textcolor{brown}{\sigma^2}|\textcolor{green!50!black}{\tau_0},\textcolor{green!50!black}{\phi_0})\\
+  &=\dfrac{1}{\textcolor{green!50!black}{\sigma_0}\sqrt{2\pi}}e^{-\frac{(\textcolor{brown}{\mu}-\textcolor{green!50!black}{\mu_0})^2}{2\textcolor{green!50!black}{\sigma_0^2}}}\times \frac{\textcolor{green!50!black}{\phi_0}^{\textcolor{green!50!black}{\tau_0}}}{\Gamma(\textcolor{green!50!black}{\tau_0})}\left(\frac{1}{\textcolor{brown}{\sigma^2}}\right)^{\textcolor{green!50!black}{\tau_0}-1}e^{-\textcolor{green!50!black}{\phi_0}\frac{1}{\textcolor{brown}{\sigma^2}}}
+\end{align*}
+}
+
+
+\frame{
+\frametitle{Exercice - Write your own Gibbs sampler}
+\framesubtitle{A few guidelines}
+
+\large
+
+{\Large How to sample each parameter independently}
+
+\vspace{0.3cm}
+
+{\Large\textcolor{brown}{$\beta$}}
+
+\vspace{-0.7cm}
+
+$$P(\textcolor{brown}{\beta}|\textcolor{blue}{\mathbf{y}}, \textcolor{blue}{\mathbf{X}},\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})\propto
+\prod^n_{i=1}\frac{e^{\textcolor{blue}{\mathbf{y}_i}\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_i}}e^{-e^{\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_i}}}}{y_i!}
+            \dfrac{1}{\textcolor{brown}{\sigma}\sqrt{2\pi}}
+            e^{-\frac{(\textcolor{brown}{\beta}-\textcolor{brown}{\mu})^2}
+                     {2\textcolor{brown}{\sigma^2}}}$$
+{\Large\textcolor{brown}{$\mu$}}
+
+\vspace{-0.7cm}
+
+$$P(\textcolor{brown}{\mu}|\textcolor{blue}{\mathbf{y}}, \textcolor{blue}{\mathbf{X}},\textcolor{brown}{\sigma},\textcolor{brown}{\beta})\propto
+\prod^n_{i=1}\dfrac{1}{\textcolor{brown}{\sigma}\sqrt{2\pi}}e^{-\frac{(\textcolor{brown}{\beta}-\textcolor{brown}{\mu})^2}{2\textcolor{brown}{\sigma^2}}}\times e^{-\frac{(\textcolor{brown}{\mu}-\textcolor{green!50!black}{\mu_0})^2}{2\textcolor{green!50!black}{\sigma_0^2}}}$$
+{\Large\textcolor{brown}{$\sigma$}}
+
+\vspace{-0.7cm}
+
+$$P(\textcolor{brown}{\sigma}|\textcolor{blue}{\mathbf{y}}, \textcolor{blue}{\mathbf{X}},\textcolor{brown}{\mu},\textcolor{brown}{\beta})\propto
+\prod^n_{i=1}\dfrac{1}{\textcolor{brown}{\sigma}\sqrt{2\pi}}
+      e^{-\frac{(\textcolor{brown}{\beta}-\textcolor{brown}{\mu})^2}{2\textcolor{brown}{\sigma^2}}}
+      \times 
+      \frac{1}{\textcolor{brown}{\sigma^2}}
+        ^{\textcolor{green!50!black}{\tau_0}-1}
+        e^{-\textcolor{green!50!black}{\phi_0}\frac{1}{\textcolor{brown}{\sigma^2}}}$$
+}
+
+
+
+\frame{
+\frametitle{Building a hierarchical model}
+\framesubtitle{How are the sugar maple and the american beech influenced by elevation?}
+
+<<sp2,dev='pdf',fig.width = 10.5,fig.height = 8,echo=FALSE,eval=TRUE>>=
+sutton <- read.csv("sutton.csv",sep=";")
+                   
+### Extract species, elevation and coordinates
+acsa <- as.matrix(ifelse(sutton$acsa>0,1,0))
+fagr <- as.matrix(ifelse(sutton$fagr>0,1,0)) 
+xy <- sutton[,1:2]
+elev<-as.matrix(xy[,2])
+
+### Draw map
+par(mar=c(0,0,0,0),oma=c(3,3,3,0), mfrow=c(1,2))
+
+### Sugar maple
+plot(xy,type="n",asp=1,axes=FALSE,xlab="",ylab="",las=1)
+mtext("200 m",side = 1, cex = 1.75)
+mtext("1000 m",side = 2,outer=TRUE, cex = 1.75,line=-7)
+mtext("Sugar maple",side = 3, cex = 2)
+points(xy[which(acsa==1),],pch=15,cex=1.25)
+points(xy[which(acsa==0),],pch=0,cex=1.25)
+
+### American beech
+plot(xy,type="n",asp=1,axes=FALSE,xlab="",ylab="",las=1)
+mtext("200 m",side = 1, cex = 1.75)
+mtext("American beech",side = 3, cex = 2)
+points(xy[which(fagr==1),],pch=15,cex=1.25)
+points(xy[which(fagr==0),],pch=0,cex=1.25)
+@
+
+}
+
+\frame{
+\frametitle{Building a hierarchical model}
+\framesubtitle{Direct Acyclic Graph}
+
+  \begin{center}
+    \scalebox{0.5}{
+      \includegraphics{Image/DAGexample.pdf}
+    }
+  \end{center}
+}
+
+\frame{
+\frametitle{Defining the pieces properly}
+\framesubtitle{Model}
+
+\Large
+
+\vspace{-0.5cm}
+
+{\Large Model definition}
+\begin{align*}
+\text{logit}(P(\textcolor{blue}{\mathbf{Y}_{ij}}=1))&=\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}}\\
+P(\textcolor{blue}{\mathbf{Y}_{ij}}=1)&=\frac{e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}}}}{1+e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}}}}
+\end{align*}
+$$\textcolor{brown}{\beta_j}\sim{\cal N}(\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})$$
+
+{\Large Prior definition}
+$$\textcolor{brown}{\mu}\sim{\cal N}(\textcolor{green!50!black}{\mu_0},\textcolor{green!50!black}{\sigma_0^2})$$
+$$\frac{1}{\textcolor{brown}{\sigma^2}}\sim{\cal \Gamma}(\textcolor{green!50!black}{\tau_0},\textcolor{green!50!black}{\phi_0})$$
+}
+
+\frame{
+\frametitle{Defining the pieces properly}
+\framesubtitle{Model}
+
+{\Large\bf\textcolor{blue}{Data}}
+
+\vspace{0.2cm}
+
+\begin{description}
+  \item[$\mathbf{Y}_{ij}$] The presence (or absence) of species $j$ at location $i$
+  \item[$\mathbf{X}$] Elevation
+\end{description}
+
+{\Large\bf\textcolor{brown}{Parameters}}
+
+\vspace{0.2cm}
+
+\begin{description}
+  \item[$\beta_j$] The importance of elevation for species $j$
+  \item[$\mu$] Average response of the species to elevation
+  \item[$\sigma^2$] How a species varies in its response to elevation
+\end{description}
+
+{\Large\bf \textcolor{green!50!black}{Priors}}
+
+\begin{description}
+  \item[$\mu_0$] Mean prior about how $\mu$ is distributed
+  \item[$\sigma_0^2$] Variance prior about how $\mu$ is distributed
+  \item[$\tau_0$] Scale prior about how $\sigma$ is distributed
+  \item[$\phi_0$] rate prior about how $\sigma$ is distributed
+\end{description}
+
+\vspace{0.2cm}
+
+}
+
+\section{Parameter estimation}
+
+\frame{
+\frametitle{Write your own Gibbs sampler}
+{\bf\Large Write a Gibbs sampler to estimate all parameters of the hierarchical model described previously}
+
+\vspace{0.5cm}
+
+\Large Recall that
+	$$\underbrace{P(\text{Model}|\text{Data})}_{\textcolor{orange}{Posterior}}\propto \underbrace{P(\text{Data}|\text{Model})}_\text{\textcolor{blue}{Likelihood}}\underbrace{P(\text{Model})}_\text{\textcolor{green!50!black}{Prior}}$$
+
+\vspace{0.5cm}
+	
+	$$P(\boldsymbol{\theta}|\mathbf{Y}) \propto P(\mathbf{Y}|\boldsymbol{\theta})P(\boldsymbol{\theta})$$
+
+}
+
+\frame{
+\frametitle{Exercice - Write your own Gibbs sampler}
+\framesubtitle{A few guidelines}
+\Large Define the different parts... Mathematically
+
+\large
+
+{\bf \hspace{0.1cm} Likelihood}
+$$P(\textcolor{blue}{\mathbf{Y}_j}|\textcolor{brown}{\beta}, \textcolor{blue}{\mathbf{X}})=\prod^n_{i=1}\left(\frac{e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}}}{1+e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}}}\right)^{\textcolor{blue}{\mathbf{Y}_{ij}}} \left(\frac{1}{1+e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}}}\right)^{1-\textcolor{blue}{\mathbf{Y}_{ij}}}$$
+
+$$P(\textcolor{brown}{\beta_j}|\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})=\prod^m_{j=1}\dfrac{1}{\textcolor{brown}{\sigma}\sqrt{2\pi}}e^{-\frac{(\textcolor{brown}{\beta_j}-\textcolor{brown}{\mu})^2}{2\textcolor{brown}{\sigma^2}}}$$
+
+
+
+%{\large \hspace{0.1cm} log-Likelihood}
+%$$\log\left(P(\textcolor{blue}{\mathbf{Y}_j}|\textcolor{brown}{\beta},\textcolor{brown}{\mu},\textcolor{brown}{\sigma}, \textcolor{blue}{\mathbf{X}})\right)=\sum^n_{i=1}\left(\textcolor{blue}{\mathbf{Y}_{ij}}\left(\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}\right)-\log\left(1+e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}}\right)\right)$$
+%\hspace{0.2cm} where
+%$$\textcolor{brown}{\beta_j}\sim{\cal N}(\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})$$
+}
+
+\frame{
+\frametitle{Exercice - Write your own Gibbs sampler}
+\framesubtitle{A few guidelines}
+\Large Define the different parts... Mathematically
+
+\Large
+
+{\bf \hspace{0.1cm} Prior}
+\begin{align*}
+  P(\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})&=(\textcolor{brown}{\mu}|\textcolor{green!50!black}{\mu_0},\textcolor{green!50!black}{\sigma_0})(\textcolor{brown}{\sigma^2}|\textcolor{green!50!black}{\tau_0},\textcolor{green!50!black}{\phi_0})\\
+  &=\dfrac{1}{\textcolor{green!50!black}{\sigma_0}\sqrt{2\pi}}e^{-\frac{(\textcolor{brown}{\mu}-\textcolor{green!50!black}{\mu_0})^2}{2\textcolor{green!50!black}{\sigma_0^2}}}\times \frac{\textcolor{green!50!black}{\phi_0}^{\textcolor{green!50!black}{\tau_0}}}{\Gamma(\textcolor{green!50!black}{\tau_0})}\left(\frac{1}{\textcolor{brown}{\sigma^2}}\right)^{\textcolor{green!50!black}{\tau_0}-1}e^{-\textcolor{green!50!black}{\phi_0}\frac{1}{\textcolor{brown}{\sigma^2}}}
+\end{align*}
+}
+
+
+\frame{
+\frametitle{Exercice - Write your own Gibbs sampler}
+\framesubtitle{A few guidelines}
+
+\large
+
+{\Large How to sample each parameter independently}
+
+\vspace{0.3cm}
+
+{\Large\textcolor{brown}{$\beta_j$}}
+
+\vspace{-0.7cm}
+
+$$P(\textcolor{brown}{\beta_j}|\textcolor{blue}{\mathbf{Y}_j}, \textcolor{blue}{\mathbf{X}},\textcolor{brown}{\mu},\textcolor{brown}{\sigma^2})\propto
+\prod^n_{i=1}\left(\frac{e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}}}
+                        {1+e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}}}
+            \right)^{\textcolor{blue}{\mathbf{Y}_{ij}}}
+            \left(\frac{1}{1+e^{\textcolor{brown}{\beta_j}\textcolor{blue}{\mathbf{X}_i}}}
+            \right)^{1-\textcolor{blue}{\mathbf{Y}_{ij}}}
+            \dfrac{1}{\textcolor{brown}{\sigma}\sqrt{2\pi}}
+            e^{-\frac{(\textcolor{brown}{\beta_j}-\textcolor{brown}{\mu})^2}
+                     {2\textcolor{brown}{\sigma^2}}}$$
+{\Large\textcolor{brown}{$\mu$}}
+
+\vspace{-0.7cm}
+
+$$P(\textcolor{brown}{\mu}|\textcolor{blue}{\mathbf{Y}_j}, \textcolor{blue}{\mathbf{X}},\textcolor{brown}{\sigma},\textcolor{brown}{\beta_j})\propto
+\prod^n_{i=1}\dfrac{1}{\textcolor{brown}{\sigma}\sqrt{2\pi}}e^{-\frac{(\textcolor{brown}{\beta_j}-\textcolor{brown}{\mu})^2}{2\textcolor{brown}{\sigma^2}}}\times e^{-\frac{(\textcolor{brown}{\mu}-\textcolor{green!50!black}{\mu_0})^2}{2\textcolor{green!50!black}{\sigma_0^2}}}$$
+{\Large\textcolor{brown}{$\sigma$}}
+
+\vspace{-0.7cm}
+
+$$P(\textcolor{brown}{\sigma}|\textcolor{blue}{\mathbf{Y}_j}, \textcolor{blue}{\mathbf{X}},\textcolor{brown}{\mu},\textcolor{brown}{\beta_j})\propto
+\prod^n_{i=1}\dfrac{1}{\textcolor{brown}{\sigma}\sqrt{2\pi}}
+      e^{-\frac{(\textcolor{brown}{\beta_j}-\textcolor{brown}{\mu})^2}{2\textcolor{brown}{\sigma^2}}}
+      \times 
+      \frac{1}{\textcolor{brown}{\sigma^2}}
+        ^{\textcolor{green!50!black}{\tau_0}-1}
+        e^{-\textcolor{green!50!black}{\phi_0}\frac{1}{\textcolor{brown}{\sigma^2}}}$$
+
+}
+
+
+\end{document}
+
+
+
+
+
+
+
+\frame{
+\frametitle{Exercice - Write your own Gibbs sampler}
+\framesubtitle{A few guidelines}
+
+{\large\bf Sample parameters using conjugate prior distribution}
+
+\vspace{0.2cm}
+
+Some technical knowledge of generalized linear model is needed here
+
+\vspace{0.2cm}
+
+$$\text{E}(\textcolor{blue}{\mathbf{y}_{i}})=e^{\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_{i}}}$$
+This means that
+$$\log(\text{E}(\textcolor{blue}{\mathbf{y}_{i}}))=\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_{i}}$$
+In this context, 
+$$\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_{i}}$$
+can be treated as a regression model with Gaussian error
+
+\vspace{0.2cm}
+
+For this reason, we can assume that 
+$$\log(\text{E}(\textcolor{blue}{\mathbf{y}_{i}}))\sim{\cal N}(\textcolor{brown}{\beta}\textcolor{blue}{\mathbf{X}_{i}},\sigma_c^2)$$
+}
+
