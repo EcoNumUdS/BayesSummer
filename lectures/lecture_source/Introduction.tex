@@ -1,0 +1,246 @@
+\documentclass{eecslides}
+\mode<presentation>
+%\usecolortheme{BBSDark}
+
+%%------------------
+% Language and font
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%%------------------
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{calc, shapes, backgrounds, arrows}
+
+% --- include packages
+\usepackage{subfigure}
+\usepackage{multicol}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+%%------------------
+\DeclareRobustCommand\refmark[1]{\textsuperscript{\ref{#1}}}
+
+%%------------------ Tune the template
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+\title[Intro]{Introduction}
+\vspace{0.4cm}
+\vspace{0.6cm}
+
+%%% Begin slideshow
+
+\begin{document}
+
+\frame{
+  \titlepage
+}
+
+\section{Introduction}
+
+%-----------------
+\frame{
+\frametitle{Langue}
+
+Même si l'école d'été est chapeautée par l'Université de Sherbrooke, la partie magistrale de l'école (y compris les notes de cours) et les discussions avec l'ensemble du groupe seront en anglais.
+
+\vspace{0.5cm}
+
+Par contre, les intéractions un à un peuvent se faire autant en anglais qu'en français; c'est comme vous le souhaitez.
+
+------------------
+
+Eventhough the summer school is officially under Université de Sherbrooke, the lectures (including class notes) and discussion with all the group will be in English.
+
+\vspace{0.5cm}
+
+However, one-on-one interactions can be either in French or in English, whatever is easier for you.
+
+\vspace{0.5cm}
+
+{\large\bf The main reason for this choice is that some of the students do not speak French}
+}
+
+%-----------------
+\frame{
+\frametitle{Round table}
+
+\large {\bf Who are you and who is your neighbour?}
+
+\begin{itemize}
+  \item Who are you?
+  \item Who are we?
+  \item Where are you from?
+  \item What are your interests?
+\end{itemize}
+}
+
+%-----------------
+\frame{
+\frametitle{Round table}
+
+\large {\bf Why are you here?}
+
+\begin{itemize}
+  \item Forced ? ;o)
+  \item Why Bayesian statistics?
+  \item What do you know about Bayesian statistics?
+  \item What did you think of the papers we asked you to read?
+\end{itemize}
+
+}
+
+%-----------------
+\frame{
+\frametitle{Objectives}
+
+\large
+
+We are aware that the background, expertise and interest of everyone is different. So, our general goal is that everyone learns and make some progress in their understanding of Bayesian statistics.
+
+\vspace{0.2cm}
+
+{\bf What we want expect from you}
+
+\vspace{0.2cm}
+
+\begin{itemize}
+  \item[\textbullet] Use probability theory to construct statistical models
+  \item[\textbullet] Write the likelihood of a model and find its maximum through different optimization techniques
+  \item[\textbullet] Understand the fondamental aspects of Bayesian statistics
+  \item[\textbullet] Estimate the parameter of a Bayesian model using different approaches
+  \item[\textbullet] Understand the rudiment of hierarchical models
+  \item[\textbullet] Compare models through the Bayesian paradigm
+\end{itemize}
+}
+
+%-----------------
+\frame{
+\frametitle{Evaluation}
+
+\begin{description}
+  \item[Presentation] 25\%
+  \item[Project report] 75\%
+\end{description}
+}
+
+%-----------------
+\frame{
+\frametitle{Course project}
+
+{\bf Step 1: Design the project (Friday) - Approx. 10 min}
+
+\begin{description}
+  \item[Introduction] Briefly give some background to the project and explain the problem that will be approached
+  \item[Why Bayes] Discuss why Bayesian statistics would be appropriate
+  \item[Data] Present the data used to investigate the problem
+  \item[Model] Describe the model and formulate the likelihood function
+  \item[Priors] Discuss how you will find appropriate priors
+  \item[Issues] Try to anticipate potential problems, in particular for parameterization
+\end{description}
+
+}
+
+%-----------------
+\frame{
+\frametitle{Course project}
+
+{\bf Step 2: Project report}
+
+\textcolor{red}{The project should be writen according to the guidelines of a Nature paper, with methods in Supplementary Material}
+
+\begin{itemize}
+  \item It needs to be sent to us by {\bf\textcolor{red}{Friday August 17th 2018}}
+  \item It can be done in French or English
+  \item It can be a solo or team (of at most {\bf 3 students}) project
+\end{itemize}
+}
+
+%-----------------
+\frame{
+\frametitle{Typical day}
+\begin{itemize}[leftmargin=2.5cm]
+  \item[\bf 7h30 - 8h30] \textcolor{blue}{Breakfast}
+  \item[\bf 8h30 - 10h00] Lecture on theory \& exercises
+  \item[\bf 10h00 - 10h15] \textcolor{green!50!black}{Break}
+  \item[\bf 10h15 - 12h00] Practice
+  \item[\bf 12h00 - 13h30] \textcolor{blue}{Lunch}
+  \item[\bf 13h30 - 15h00] Lecture on an application \& exercises
+  \item[\bf 15h00 - 15h15] \textcolor{green!50!black}{Break}
+  \item[\bf 15h15 - 16h30] Work on a problem
+  \item[\bf 17h30 - 18h00] Work on the project
+  \item[\bf 18h00 - 19h00] \textcolor{green!50!black}{Free time}
+  \item[\bf 19h00 - 20h00] \textcolor{blue}{Supper}
+  \item[\bf After 20h00] \textcolor{green!50!black}{Work on the project}
+\end{itemize}
+
+This is not meant to be followed strickly and will likely vary depending on the topic of the day
+
+}
+
+%-----------------
+\frame{
+\frametitle{Schedule of the week}
+
+\begin{description}
+  \item[Day 1]
+  \begin{description}
+    \item[Theory] Probability Theory
+    \item[Discussion] Defining the prior for the problem of ecological interactions
+    \item[Application] Understanding co-distribution
+  \end{description}
+  \item[Day 2]
+  \begin{description}
+    \item[Theory] Likelihood estimation
+    \item[Discussion] Code a simulated annealing function to model tree distribution
+    \item[Application] Fitting a probabilistic method to presence-only data
+  \end{description}
+  \item[Day 3]
+  \begin{description}
+    \item[Theory] Monte Carlo Markov Chains (MCMC)
+    \item[Discussion] Code different types of MCMC algorithm (Metropolis-Hastings and Gibbs sampler) to model the distribution of the sugar maple on mount Sutton
+    \item[Application] Modelling range dynamics
+  \end{description}
+\end{description}
+}
+
+%-----------------
+\frame{
+\frametitle{Schedule of the week}
+\begin{description}
+  \item[Day 4]
+
+  \begin{description}
+    \item[Theory] Hierarchical models
+    \item[Discussion] Code Gibbs samplers to construct a univariate mixed model and a multivariate model to model the distribution of the sugar maple and the american beech on mont Sutton
+    \item[Application] Hierarchical modelling of species community
+  \end{description}
+  \item[Day 5]
+  \begin{description}
+    \item[Theory] miscellaneous interesting things about Bayesian modelling (model comparison, different ways to estimate models,\dots)
+    \item[Discussion]
+    \item[Presentation]
+  \end{description}
+\end{description}
+}
+
+%-----------------
+\frame{
+\frametitle{Logistics}
+
+\begin{itemize}
+  \item Alcohol everywhere but in the lunchroom
+  \item Fire place there
+  \item hicking trails all around
+  \item Wednesday longer lunch time (from 12h00 to 15h00)
+  \item No on-site security Tuesday and Wednesday evening (from 17h00)
+\end{itemize}
+
+}
+
+
+\end{document}

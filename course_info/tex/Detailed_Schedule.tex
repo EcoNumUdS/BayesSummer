@@ -1,0 +1,287 @@
+\documentclass{eecslides}
+\mode<presentation>
+%\usecolortheme{BBSDark}
+
+%%------------------
+% Language and font
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%%------------------
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{calc, shapes, backgrounds, arrows}
+
+% --- include packages
+\usepackage{subfigure}
+\usepackage{multicol}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+%%------------------
+\DeclareRobustCommand\refmark[1]{\textsuperscript{\ref{#1}}}
+
+%%------------------ Tune the template
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+\title[Outline]{Outline}
+\vspace{0.4cm}
+\vspace{0.6cm}
+
+%%% Begin slideshow
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Schedule}
+
+\begin{frame}
+
+\frametitle{Typical day}
+
+\large
+
+\begin{itemize}[leftmargin=2.5cm]
+  \item[\bf 7h00 - 8h30] \textcolor{blue}{Breakfast}
+  \item[\bf 8h30 - 10h00] Theory
+  \item[\bf 10h00 - 10h15] \textcolor{green!50!black}{Break}
+  \item[\bf 10h15 - 12h00] Practice
+  \item[\bf 12h00 - 13h30] \textcolor{blue}{Lunch}
+  \item[\bf 13h30 - 15h30] Practice
+  \item[\bf 15h30 - 15h45] \textcolor{green!50!black}{Break}
+  \item[\bf 15h45 - 17h30] Project
+  \item[\bf 17h30 - 18h00] Presentation - Real ecological illustration
+  \item[\bf 18h00 - 19h00] \textcolor{green!50!black}{Free time}
+  \item[\bf 19h00 - 20h00] \textcolor{blue}{Supper}
+  \item[\bf After 20h00] \textcolor{green!50!black}{Free time}
+\end{itemize}
+
+\end{frame}
+
+\frame{
+\frametitle{Day 1}
+
+
+\vspace{-0.5cm}
+
+\begin{itemize}[leftmargin=2.5cm]
+  \item[\bf 8h30 - 9h00] Introduction
+  \begin{itemize}
+    \item Typical day
+    \item Weekly schedule
+    \begin{itemize}
+      \item Course activities (programming with R)
+      \item Leisure activities
+    \end{itemize}
+    \item Project (very brief introduction)
+    \item Questions, comments, things that people wants
+  \end{itemize}
+  \item[\bf 9h00 - 9h30] Discussion about statistical philosophy (frequentist, Bayesian, priors, likelihood \dots) and expectations
+  \item[\bf 9h30 - 10h00] Probability theory part 1 (Kevin Cazelles)
+  \item[\bf 10h00 - 10h30] Practice
+  \item[\bf 10h15 - 11h00] Probability theory part 2 (Kevin Cazelles)
+  \item[\bf 11h00 - 12h00] Practice
+  \begin{itemize}
+    \item Small exercice(s) to be carried out by hand
+  \end{itemize}
+  \item[\bf 13h30 - 15h30] Probability theory part 3 (Kevin Cazelles)
+  \begin{itemize}
+    \item Slightly more complex exercises that requires the computer
+  \end{itemize}
+  \item[\bf 15h45 - 17h30] Project
+  \begin{itemize}
+    \item Discuss project in more details (students should know what they will do for the project by 17h30)
+  \end{itemize}
+  \item[\bf 17h30 - 18h00] Presentation
+  \begin{itemize}
+    \item Presentation of Kevin work on co-occurrence (15 to 30 slides ecological context with more technical details)
+  \end{itemize}
+\end{itemize}
+}
+
+
+% Very simple question/problem (linear model, ANOVA)
+% Forest data ecological
+
+\frame{
+\frametitle{Day 2}
+
+\large
+
+\vspace{-0.5cm}
+
+\begin{itemize}[leftmargin=2.5cm]
+  \item[\bf 8h30 - 10h00] Maximum Likelihood and Optimization (Dominique Gravel)
+  {\normalsize
+  \begin{itemize}
+    \item Why the likelihood is important in Bayesian statistics?
+    \item Simulated annealing
+    \item Other optimization techniques? (Nelder-Mead simplex?)
+  \end{itemize}
+  }
+  \item[\bf 10h15 - 12h00] Practice
+  {\normalsize
+  \begin{itemize}
+    \item Code your own simulated annealing algorithm ``by hand''
+  \end{itemize}
+  }
+  \item[\bf 13h30 - 15h30] Practice
+  {\normalsize
+  \begin{itemize}
+    \item Apply the code to fit a model
+  \end{itemize}
+  }
+  \item[\bf 15h45 - 17h30] Project
+  {\normalsize
+  \begin{itemize}
+    \item Work what has been learned so far in the project
+  \end{itemize}
+  }
+  \item[\bf 17h30 - 18h00] Presentation
+  {\normalsize
+  \begin{itemize}
+    \item Presentation of a research paper on the topic of the day  (15 to 30 slides ecological context with more technical details)
+  \end{itemize}
+  }
+\end{itemize}
+}
+
+\frame{
+\frametitle{Day 3}
+
+\vspace{-0.5cm}
+
+\begin{itemize}[leftmargin=2.5cm]
+  \item[\bf 8h30 - 10h00] \textcolor{blue}{MCMC} and \textcolor{orange}{Model Evaluation} (Guillaume Blanchet)
+  {\normalsize
+  \begin{itemize}
+    \item \textcolor{blue}{Link with Likelihood (Frequentist) and Bayesian}
+    \item \textcolor{blue}{Why MCMC ? Link with the likelihood}
+    \item \textcolor{blue}{Metropolis-Hasting}
+      \begin{itemize}
+        \item \textcolor{blue}{Single component adaptive Metropolis (SCAM)}
+      \end{itemize}
+    \item \textcolor{blue}{Gibb sampling}
+    \item \textcolor{blue}{Conjugate prior distribution} 
+    \item \textcolor{blue}{Other things, HMC, INLA (very stiff learning curve... Ben Bolker told me this),...} 
+    \item \textcolor{orange}{trace and density plots}
+    \item \textcolor{orange}{various convergence diagnostics}
+  \end{itemize}
+  }
+  \item[\bf 10h15 - 12h00] Practice
+  {\normalsize
+  \begin{itemize}
+    \item Code an MCMC for a simple example (e.g. curves with three bumps as a likelihood)
+  \end{itemize}
+  }
+  \item[\bf 13h30 - 15h30] Practice
+  {\normalsize
+  \begin{itemize}
+    \item Continue... Think of a more complex example (2D...)
+  \end{itemize}
+  }
+  \item[\bf 15h45 - 17h30] Project
+  {\normalsize
+  \begin{itemize}
+    \item Work what has been learned so far in the project
+  \end{itemize}
+  }
+  \item[\bf 17h30 - 18h00] Presentation
+  {\normalsize
+  \begin{itemize}
+    \item Presentation of Nature Ecology and Evolution work (15 to 30 slides ecological context with more technical details)
+  \end{itemize}
+  }
+\end{itemize}
+}
+
+\frame{
+\frametitle{Day 4}
+
+\small
+\vspace{-0.5cm}
+
+\begin{itemize}[leftmargin=2.5cm]
+  \item[\bf 8h30 - 10h00] Hierarchical modelling (Guillaume Blanchet \& Matthew Talluto?)
+  \begin{itemize}
+    \item What is a hierarchical model?
+    \begin{itemize}
+      \item Link with random effect and mixed models
+    \end{itemize}
+    \item Start from a generalized linear model without any hierarchy and build from therm
+    \item Ecological illustration to work through
+    \item Directed acyclic graph (DAG)
+    \begin{itemize}
+      \item Data
+      \item Parameters to estimate
+      \item Priors
+    \end{itemize}
+  \end{itemize}
+  \item[\bf 10h15 - 12h00] Practice
+  \begin{itemize}
+    \item Answer ecological question with data using what was learned so far
+  \end{itemize}
+  \item[\bf 13h30 - 15h30] Practice
+  \begin{itemize}
+    \item Continue... Think of a more complex example
+  \end{itemize}
+  \item[\bf 15h45 - 17h30] Project
+  \begin{itemize}
+    \item Work what has been learned so far in the project
+  \end{itemize}
+  \item[\bf 17h30 - 18h00] Presentation
+  \begin{itemize}
+    \item Presentation of JSDM work (15 to 30 slides ecological context with more technical details)
+  \end{itemize}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Day 5}
+
+\small
+\vspace{-0.5cm}
+
+\begin{itemize}[leftmargin=2.5cm]
+  \item[\bf 8h30 - 10h00] Model Comparison (Matthew Talluto \& Guillaume Blanchet?)
+  \begin{itemize}
+    \item AIC (see recent papers by Taper and Ponciano [2016]), BIC, DIC, \dots
+    \item Model selection ?
+    \item \dots
+  \end{itemize}
+  \item[\bf 10h15 - 12h00] Practice
+  \begin{itemize}
+    \item Answer ecological question with data using what was learned so far
+  \end{itemize}
+  \item[\bf 13h30 - 15h30] Practice
+  \begin{itemize}
+    \item Continue... Think of a more complex example
+  \end{itemize}
+  \item[\bf 15h45 - 17h30] Project
+  \begin{itemize}
+    \item Work what has been learned so far in the project
+  \end{itemize}
+  \item[\bf 17h30 - 18h00] Presentation
+  \begin{itemize}
+    \item Presentation of a research paper on the topic of the day (to be determined)
+  \end{itemize}
+\end{itemize}
+}
+
+\end{document}
+
+- Problem usefulness of using Bayesian
+- Dataset
+- Question
+- 
+
+Send small 2500 words
+- Paper in short format (Nature type manuscript)
+- Methods as appendix
